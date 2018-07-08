@@ -32,6 +32,17 @@
 
     $course = $DB->get_record('course', $params, '*', MUST_EXIST);
 
+    //HardFun Hack - Allow reload of user courses from external db
+    if(array_key_exists('force_enrollments_reload', $_REQUEST)) {
+        if($_REQUEST['force_enrollments_reload']=="reload") {
+            global $DB, $USER;
+            $enrol = enrol_get_plugin('database');
+            $result = 0;
+            $result = $result | $enrol->sync_user_enrolments($USER);
+        }
+    }
+
+
     $urlparams = array('id' => $course->id);
 
     // Sectionid should get priority over section number
