@@ -43,6 +43,8 @@
     }
 
 
+
+
     $urlparams = array('id' => $course->id);
 
     // Sectionid should get priority over section number
@@ -60,6 +62,29 @@
 
     context_helper::preload_course($course->id);
     $context = context_course::instance($course->id, MUST_EXIST);
+
+    $user_started_course = false;
+    $user_started_first_course = false;
+    if(is_enrolled($context, $USER)) {
+        $rolestr = array();
+        $context = context_course::instance($course->id);
+        $roles = get_user_roles($context, $USER->id);
+        foreach ($roles as $role) {
+            $rolestr[] = role_get_name($role, $context);
+        }
+        if(in_array("Estudante",$rolestr) || in_array("Student",$rolestr)) {
+            $lastaccess = $DB->get_field('user_lastaccess', 'timeaccess', array('courseid' => $course->id, 'userid' => $USER->id));
+            if(!$lastaccess) {
+                $user_started_course = true;
+
+                $firstaccess = $DB->get_field('user_lastaccess', 'timeaccess', array('userid' => $USER->id));
+
+                if(!$firstaccess) {
+                    $user_started_first_course = true;
+                }
+            }
+        }
+    }
 
     // Remove any switched roles before checking login
     if ($switchrole == 0 && confirm_sesskey()) {
@@ -88,6 +113,9 @@
         $USER->editing = 0;
         $reset_user_allowed_editing = true;
     }
+
+    
+
 
     //If course is hosted on an external server, redirect to corresponding
     //url with appropriate authentication attached as parameter
@@ -261,6 +289,14 @@
 
         if (async_helper::is_async_pending($id, 'course', 'backup')) {
             echo $OUTPUT->notification(get_string('pendingasyncedit', 'backup'), 'warning');
+        }
+    }
+
+    //HardFun - Code to inform Google Analytics that user started a course or first start
+    if ($user_started_course) {
+        echo html_writer::script("ga('send', 'event', 'cursos', 'iniciou', '$course->shortname' );");
+        if ($user_started_first_course) {
+            echo html_writer::script("ga('send', 'event', 'cursos', 'iniciou primeiro curso', '$course->shortname' );");
         }
     }
 
