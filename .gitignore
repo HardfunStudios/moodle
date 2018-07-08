@@ -36,3 +36,13 @@ composer.phar
 /lib/yuilib/*/*/*-coverage.js
 atlassian-ide-plugin.xml
 /node_modules/
+
+
+user/profile/field/multiselect
+mod/hvp
+theme/ec
+user/profile/field/associated
+user/profile/field/conditional
+auth/loginlogoutredir
+user/profile/field/cpf
+admin/tool/pluginskel
