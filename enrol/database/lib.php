@@ -320,6 +320,8 @@ class enrol_database_plugin extends enrol_plugin {
         $userfield        = trim($this->get_config('remoteuserfield'));
         $rolefield        = trim($this->get_config('remoterolefield'));
         $otheruserfield   = trim($this->get_config('remoteotheruserfield'));
+        $groupnamefield   = trim($this->get_config('remotegroupnamefield'));
+        $groupcodefield   = trim($this->get_config('remotegroupcodefield'));
 
         // Lowercased versions - necessary because we normalise the resultset with array_change_key_case().
         $coursefield_l    = strtolower($coursefield);
@@ -456,6 +458,12 @@ class enrol_database_plugin extends enrol_plugin {
         if ($otheruserfield) {
             $sqlfields[] = $otheruserfield;
         }
+        if ($groupcodefield) {
+            $sqlfields[] = $groupcodefield;
+            if ($groupnamefield) {
+                $sqlfields[] = $groupnamefield;
+            }
+        }
         foreach ($existing as $course) {
             if ($ignorehidden and !$course->visible) {
                 continue;
@@ -491,6 +499,72 @@ class enrol_database_plugin extends enrol_plugin {
                 }
             }
             $rs->close();
+
+            // Are we syncing group memberships?
+            if ($groupcodefield) {
+                $requested_groups = array();
+                $current_groups = array();
+
+                require_once("$CFG->dirroot/group/lib.php");
+
+                //Make sure there is a grouping for our database groups
+                if (!$grouping = $DB->get_record('groupings', array('courseid' => $course->id, 'name' => 'Database Enrolment Groups'))) {
+                    if ($groupnamefield) {
+                        $data = new stdClass();
+                        $data->courseid = $course->id;
+                        $data->name = 'Database Enrolment Groups';
+                        $data->description = 'Database Enrolment Plugin grouping. Please do not edit';
+                        $groupingid = groups_create_grouping($data);
+                    }
+                } else if (!empty($grouping)) {
+                    $groupingid = $grouping->id;
+                }
+
+                // Is there a regoruping for database enrolment groups?
+                if (!empty($groupingid)) {
+                    //Get all groups in this course and grouping
+                    $sql = "SELECT g.id, g.name, g.enrolmentkey
+                      FROM {groups} g
+                        INNER JOIN {groupings_groups} gg ON gg.groupid = g.id AND gg.groupingid = :groupingid
+                      WHERE g.courseid = :courseid";
+                    $params = array('courseid' => $course->id, 'groupingid' => $groupingid);
+                    $foundgroups = $DB->get_records_sql($sql, $params);
+                    $groups = array();
+                    foreach ($foundgroups as $group) {
+                        $groups[$group->enrolmentkey] = $group;
+                    }
+                    $rs->close();
+
+                    //Get the current group memberships for this course and grouping
+                    $sql = "SELECT u.id, g.enrolmentkey, gm.userid
+                      FROM {user} u
+                        INNER JOIN {groups_members} gm ON u.id = gm.userid
+                        INNER JOIN {groups} g ON gm.groupid = g.id
+                        INNER JOIN {groupings_groups} gg ON gg.groupid = g.id AND gg.groupingid = :groupingid
+                      WHERE g.courseid = :courseid";
+
+                    $params = array('courseid' => $course->id, 'groupingid' => $groupingid);
+                    $found_memberships = $DB->get_records_sql($sql, $params);
+                    foreach ($found_memberships as $userid=>$membership) {
+                        $group_enrolmentkey = $membership->enrolmentkey;
+                        if (isset($groups[$group_enrolmentkey])) {
+                            $groupid = $groups[$group_enrolmentkey]->id;
+                            $current_groups[$userid][$groupid] = $groupid;
+                        }
+                    }
+                    $rs->close();
+                } else {
+                    $sql = "SELECT g.id, g.name, g.enrolmentkey
+                        FROM {groups} g
+                        WHERE g.courseid = :courseid";
+                    $params = array('courseid' => $course->id);
+                    $foundgroups = $DB->get_records_sql($sql, $params);
+                    $groups = array();
+                    foreach ($foundgroups as $group) {
+                        $groups[$group->id] = $group;
+                    }
+                }
+            }
 
             // Get list of users that need to be enrolled and their roles.
             $requestedroles  = array();
@@ -534,6 +608,31 @@ class enrol_database_plugin extends enrol_plugin {
                         if (empty($fields[$otheruserfieldlower])) {
                             $requestedenrols[$userid][$roleid] = $roleid;
                         }
+
+                        if (!empty($groupcodefield) && !empty($fields[$groupcodefield])) {
+                            $group_enrolmentkey = $fields[$groupcodefield];
+                            if (!isset($groups[$group_enrolmentkey])) {
+                                if ($groupnamefield && $groupingid) {
+                                    //Create the group in the course
+                                    $data = new stdClass();
+                                    $data->name = $fields[$groupnamefield];
+                                    $data->enrolmentkey = $fields[$groupcodefield];
+                                    $data->courseid = $course->id;
+                                    $data->description = 'Database Enrolment Plugin group. Please do not edit.';
+                                    $newgroupid = groups_create_group($data);
+                                    $groups[$fields[$groupcodefield]] = $DB->get_record('groups', array('id' => $newgroupid), 'id', 'name', 'enrolmentkey');
+
+                                    $data = new stdClass();
+                                    $data->groupingid = $groupingid;
+                                    $data->groupid = $newgroupid;
+                                    $data->timeadded = time();
+                                    $DB->insert_record('groupings_groups', $data);
+                                }
+                            } else {
+                                $groupid = $groups[$group_enrolmentkey]->id;
+                                $requested_groups[$userid][$groupid] = $groupid;
+                            }
+                        }
                     }
                 }
                 $rs->Close();
@@ -542,6 +641,34 @@ class enrol_database_plugin extends enrol_plugin {
                 continue;
             }
             unset($usermapping);
+
+            // Are we syncing group memberships?
+            if ($groupcodefield) {
+                foreach ($requested_groups as $userid=>$usergroups) {
+                    //Add user to any any new groups
+                    foreach($usergroups as $groupid) {
+                        if (empty($current_groups[$userid][$groupid])) {
+                            groups_add_member($groupid, $userid);
+                            $current_groups[$userid][$groupid] = $groupid;
+                            if ($verbose) {
+                                mtrace("  adding to group: $userid ==> $groupid");
+                            }
+                        }
+                    }
+                }
+
+                foreach ($current_groups as $userid=>$usergroups) {
+                    //Remove user from any groups they shouldn't be in anymore
+                    foreach($usergroups as $groupid) {
+                        if (empty($requested_groups[$userid][$groupid])) {
+                            groups_remove_member($groupid, $userid);
+                            if ($verbose) {
+                                mtrace("  removing from group: $userid ==> $groupid");
+                            }
+                        }
+                    }
+                }
+            }
 
             // Enrol all users and sync roles.
             foreach ($requestedenrols as $userid => $userroles) {

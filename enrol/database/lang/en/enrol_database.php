@@ -74,3 +74,7 @@ $string['remoteuserfield_desc'] = 'The name of the field in the remote table tha
 $string['templatecourse'] = 'New course template';
 $string['templatecourse_desc'] = 'Optional: auto-created courses can copy their settings from a template course. Type here the shortname of the template course.';
 $string['privacy:metadata'] = 'The External database enrolment plugin does not store any personal data.';
+$string['remotegroupnamefield'] = 'Remote group name field';
+$string['remotegroupnamefield_desc'] = 'Optional: if specified then groups can be automatically created where a group with the specified enrolment key doesn\'t already exist. If the name field is not specified then groups won\'t be automatically created.';
+$string['remotegroupcodefield'] = 'Remote group enrolment key field';
+$string['remotegroupcodefield_desc'] = 'Optional: if specified then group memberships can be synced from the external database';
