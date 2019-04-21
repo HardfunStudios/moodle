@@ -2247,7 +2247,19 @@ class core_renderer extends renderer_base {
             $aggregatelabel = $ratingmanager->get_aggregate_label($rating->settings->aggregationmethod);
             $aggregatestr   = $rating->get_aggregate_string();
 
-            $aggregatehtml  = html_writer::tag('span', $aggregatestr, array('id' => 'ratingaggregate'.$rating->itemid, 'class' => 'ratingaggregate')).' ';
+            switch ($aggregatestr) {
+                case 'Revisar':
+                    $was_evaluated = 'review';
+                    break;
+                case '':
+                    $was_evaluated = '';
+                    break;
+                default:
+                    $was_evaluated = 'evaluated';
+                    break;
+            }
+
+            $aggregatehtml  = html_writer::tag('span', $aggregatestr, array('id' => 'ratingaggregate'.$rating->itemid, 'class' => "ratingaggregate $was_evaluated")).' ';
             if ($rating->count > 0) {
                 $countstr = "({$rating->count})";
             } else {

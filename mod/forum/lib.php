@@ -1831,6 +1831,16 @@ function forum_get_post_full($postid) {
                             WHERE p.id = ?", array($postid));
 }
 
+
+function forum_count_all_discussion_posts($discussionid) {
+    global $CFG, $DB, $USER;
+
+    $params = array($discussionid);
+    $result = $DB->get_records_sql("SELECT COUNT(*) FROM {forum_posts} p WHERE p.discussion = ?", $params);
+
+    return array_pop($result)->count;
+}
+
 /**
  * Gets all posts in discussion including top parent.
  *
@@ -1842,7 +1852,7 @@ function forum_get_post_full($postid) {
  * @param bool $tracking does user track the forum?
  * @return array of posts
  */
-function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
+function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false, $limit=false) {
     global $CFG, $DB, $USER;
 
     $tr_sel  = "";
@@ -1857,13 +1867,28 @@ function forum_get_all_discussion_posts($discussionid, $sort, $tracking=false) {
 
     $allnames = get_all_user_name_fields(true, 'u');
     $params[] = $discussionid;
+
+    if ($limit) {
+        $limit = "LIMIT ${limit['limit']} OFFSET ${limit['offset']}";
+    }
+
     if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {forum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
-                                 ORDER BY $sort", $params)) {
+                                 ORDER BY $sort $limit", $params)) {
         return array();
+    }
+
+    if($limit) {
+        $root = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
+                                      FROM {forum_posts} p
+                                        LEFT JOIN {user} u ON p.userid = u.id
+                                        $tr_join
+                                      WHERE p.discussion = ? AND parent = 0", $params);
+        $root = array_pop($root);
+        $posts[$root->id] = $root;
     }
 
     foreach ($posts as $pid=>$p) {
@@ -5730,7 +5755,7 @@ function forum_print_latest_discussions($course, $forum, $maxdiscussions = -1, $
  * @param bool $canrate
  */
 function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode, $canreply=NULL, $canrate=false) {
-    global $USER, $CFG;
+    global $USER, $CFG, $OUTPUT;
 
     require_once($CFG->dirroot.'/rating/lib.php');
 
@@ -5749,8 +5774,16 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
     $cm->cache->usersgroups = array();
 
     $posters = array();
+    $limit = false;
+    $page   = optional_param('page', 0, PARAM_INT);
 
     // preload all posts - TODO: improve...
+    if($mode < FORUM_MODE_NESTED) {
+        $limit = array();
+        $limit['limit'] = $CFG->forum_manyposts;
+        $limit['offset'] = $page * $limit['limit'];
+    }
+
     if ($mode == FORUM_MODE_FLATNEWEST) {
         $sort = "p.created DESC";
     } else {
@@ -5758,7 +5791,8 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
     }
 
     $forumtracked = forum_tp_is_tracked($forum);
-    $posts = forum_get_all_discussion_posts($discussion->id, $sort, $forumtracked);
+    $posts = forum_get_all_discussion_posts($discussion->id, $sort, $forumtracked, $limit);
+
     $post = $posts[$post->id];
 
     foreach ($posts as $pid=>$p) {
@@ -5809,6 +5843,27 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
     forum_print_post($post, $discussion, $forum, $cm, $course, $ownpost, $reply, false,
                          '', '', $postread, true, $forumtracked);
 
+    //paginating
+    $pagePosts = $CFG->forum_manyposts - 1;
+    $paginate = false;
+    $postNumbers = forum_count_all_discussion_posts($discussion->id) - 1;
+
+    if($mode < FORUM_MODE_NESTED) {
+        if($postNumbers > $pagePosts) {
+            $begin = $page * $pagePosts;
+            // $posts = array_slice($posts, $begin, $pagePosts, true);
+            $paginate = true;
+        }
+
+    } else {
+        $postNumbers = count($post->children);
+        if($postNumbers > $pagePosts) {
+            $begin = $page * $pagePosts;
+            // $posts[$post->id]->children = array_slice($posts[$post->id]->children, $begin, $pagePosts, true);
+            $paginate = true;
+        }
+    }
+
     switch ($mode) {
         case FORUM_MODE_FLATOLDEST :
         case FORUM_MODE_FLATNEWEST :
@@ -5823,6 +5878,12 @@ function forum_print_discussion($course, $cm, $forum, $discussion, $post, $mode,
         case FORUM_MODE_NESTED :
             forum_print_posts_nested($course, $cm, $forum, $discussion, $post, $reply, $forumtracked, $posts);
             break;
+    }
+
+    //paging bar
+    if($paginate){
+        $url = new moodle_url('/mod/forum/discuss.php', array('d' => $discussion->id));
+        echo $OUTPUT->paging_bar($postNumbers, $page, $pagePosts, $url);
     }
 }
 

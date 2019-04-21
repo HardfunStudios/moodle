@@ -45,7 +45,21 @@ M.core_rating = {
 
                                 var node = scope.Y.one('#ratingaggregate' + itemid);
                                 node.set('innerHTML',data.aggregate);
-                                node.setStyle('background', '#beeabe');
+
+                                switch(data.aggregate) {
+                                    case 'Revisar':
+                                        node.addClass('review');
+                                        node.removeClass('evaluated');
+                                        break;
+                                    case ' - ':
+                                        node.removeClass('evaluated');
+                                        node.removeClass('review');
+                                        break;
+                                    default:
+                                        node.addClass('evaluated');
+                                        node.removeClass('review');
+                                        break;
+                                }
 
                                 // Empty the count value if no ratings.
                                 var node = scope.Y.one('#ratingcount' + itemid);
