@@ -341,6 +341,9 @@ if ($user->id == -1 or ($user->id != $USER->id)) {
     echo $OUTPUT->box(get_string('configintroadmin', 'admin'), 'generalbox boxwidthnormal boxaligncenter');
     echo '<br />';
 } else {
+    // HardFun's customization: redirect user to LP
+    header('Location: ' . $CFG->landingpage_url . '/editar-perfil');
+    
     $streditmyprofile = get_string('editmyprofile');
     $strparticipants  = get_string('participants');
     $strnewuser       = get_string('newuser');
