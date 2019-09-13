@@ -196,4 +196,4 @@ class MoodleUserInfoSync {
     }
 }
 
-$instance = MoodleUserInfoSync::getInstance()->execute()->destroy();
+$instance = MoodleUserInfoSync::getInstance()->execute();
