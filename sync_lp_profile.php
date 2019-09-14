@@ -51,7 +51,7 @@ class MoodleUserInfoSync {
 
     private function setStudent(){
         $sth = $this->lp->prepare('
-            SELECT s.*, c.name as city_name, st.acronym as state_acronym, sc.name as school_name
+            SELECT s.*, st.acronym as state_acronym, sc.name as school_name
             FROM students s
             LEFT JOIN cities c ON c.id = s.city_id
             LEFT JOIN states st ON st.id = c.state_id
@@ -82,8 +82,8 @@ class MoodleUserInfoSync {
             $this->student['last_name'],
             $this->student['email'],
             $this->student['phone_number'],
-            $this->student['city_name'],
-            $this->student['country'],
+            $this->student['city_name'] || "", // Moodle refuses null city
+            $this->student['country'] || "",
             $this->moodle_user_id
         );
         if(!$sth->execute($student_lp_basic_fields)){
