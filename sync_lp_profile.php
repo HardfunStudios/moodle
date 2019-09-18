@@ -140,7 +140,7 @@ class MoodleUserInfoSync {
         );
 
         foreach($extra_fields_ids as $key => $id) {
-            if(is_null($this->student[$key])){
+            if(is_null($this->student[$key]) || empty($this->student[$key])){
                 $sth = $this->moodle->prepare('
                     DELETE FROM '.$this->moodle_prefix.'user_info_data
                     WHERE
