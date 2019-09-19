@@ -30,7 +30,7 @@ require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
 // HardFun's customization: redirect user to LP
-if ($USER->auth === 'db') {
+if ($USER->auth === 'db' && core_user::is_real_user($USER->id)) {
     header('Location: ' . $CFG->landingpage_url . '/editar-perfil?ref=' . $_GET['hf_ref']);
 }
 
