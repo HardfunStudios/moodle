@@ -2673,7 +2673,7 @@ function require_login($courseorid = null, $autologinguest = true, $cm = null, $
         $usernotfullysetup = user_not_fully_set_up($USER, true);
     }
 
-    if ($usernotfullysetup) {
+    if ($usernotfullysetup && empty($USER->realuser)) {
         if ($preventredirect) {
             throw new moodle_exception('usernotfullysetup');
         }

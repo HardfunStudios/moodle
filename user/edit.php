@@ -28,9 +28,8 @@ require_once($CFG->dirroot.'/user/edit_form.php');
 require_once($CFG->dirroot.'/user/editlib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
-
 // HardFun's customization: redirect user to LP
-if ($USER->auth === 'db' && core_user::is_real_user($USER->id)) {
+if ($USER->auth === 'db' && empty($USER->realuser)) {
     header('Location: ' . $CFG->landingpage_url . '/editar-perfil?ref=' . $_GET['hf_ref']);
 }
 
