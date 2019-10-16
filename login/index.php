@@ -225,6 +225,13 @@ if ($frm and isset($frm->username)) {                             // Login WITH 
             set_moodle_cookie($USER->username);
         }
 
+        // HF Customization: sync profile fields
+        $ch = curl_init($CFG->wwwroot . "/sync_lp_profile.php?u=" . $USER->username);
+        curl_setopt($ch, CURLOPT_VERBOSE, 0);
+        curl_setopt($ch,CURLOPT_RETURNTRANSFER,1);
+        curl_exec($ch);
+        curl_close($ch);
+
         $urltogo = core_login_get_return_url();
 
     /// check if user password has expired

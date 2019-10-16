@@ -29,6 +29,12 @@ require_once($CFG->dirroot.'/user/editlib.php');
 require_once($CFG->dirroot.'/user/profile/lib.php');
 require_once($CFG->dirroot.'/user/lib.php');
 
+// HardFun's customization: redirect user to LP
+if ($USER->auth === 'db' && empty($USER->realuser)) {
+    header('Location: ' . $CFG->landingpage_url . '/editar-perfil?ref=' . $_GET['hf_ref']);
+}
+
+
 $userid = optional_param('id', $USER->id, PARAM_INT);    // User id.
 $course = optional_param('course', SITEID, PARAM_INT);   // Course id (defaults to Site).
 $returnto = optional_param('returnto', null, PARAM_ALPHA);  // Code determining where to return to after save.
