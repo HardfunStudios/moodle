@@ -869,7 +869,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     // Add a permalink.
     $permalink = new moodle_url($discussionlink);
     $permalink->set_anchor('p' . $post->id);
-    $commands[] = array('url' => $permalink, 'text' => get_string('permalink', 'forum'), 'attributes' => ['rel' => 'bookmark']);
+    // $commands[] = array('url' => $permalink, 'text' => get_string('permalink', 'forum'), 'attributes' => ['rel' => 'bookmark']);
 
     // SPECIAL CASE: The front page can display a news item post to non-logged in users.
     // Don't display the mark read / unread controls in this case.
@@ -889,7 +889,7 @@ function forum_print_post($post, $discussion, $forum, &$cm, $course, $ownpost=fa
     }
 
     // Zoom in to the parent specifically
-    if ($post->parent) {
+    if ($post->parent && false) {
         $url = new moodle_url($discussionlink);
         if ($str->displaymode == FORUM_MODE_THREADED) {
             $url->param('parent', $post->parent);
