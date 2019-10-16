@@ -20,6 +20,7 @@
 *~
 #
 /config.php
+/config-db-hf.php
 /lib/editor/tinymce/extra/tools/temp/
 /tags
 /TAGS
@@ -45,12 +46,22 @@ composer.phar
 atlassian-ide-plugin.xml
 /node_modules/
 
-
-user/profile/field/multiselect
+# Additional plugins
+admin/tool/pluginskel
+availability/condition/role
+blocks/completion_progress
+blocks/configurable_reports
+blocks/dedication
 mod/hvp
-theme/ec
 user/profile/field/associated
 user/profile/field/conditional
-auth/loginlogoutredir
 user/profile/field/cpf
-admin/tool/pluginskel
+
+# Custom plugins
+auth/loginlogoutredir
+mod/simplecertificate
+user/profile/field/multiselect
+
+# Custom themes
+theme/ec
+
