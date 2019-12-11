@@ -91,6 +91,13 @@ class post extends exporter {
 
         return [
             'id' => ['type' => PARAM_INT],
+            'postid' => ['type' => PARAM_INT],
+            'userid' => ['type' => PARAM_INT],
+            'reactionid0count' =>['type' => PARAM_INT],
+            'reactionid1count' =>['type' => PARAM_INT],
+            'reactionid2count' =>['type' => PARAM_INT],
+            'reactionid3count' =>['type' => PARAM_INT],
+            'reactionid4count' =>['type' => PARAM_INT],
             'subject' => ['type' => PARAM_TEXT],
             'replysubject' => ['type' => PARAM_TEXT],
             'message' => ['type' => PARAM_RAW],
@@ -339,6 +346,7 @@ class post extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $DB;
         $post = $this->post;
         $authorgroups = $this->related['authorgroups'];
         $forum = $this->related['forum'];
@@ -414,8 +422,31 @@ class post extends exporter {
             $replysubject = "{$strre} {$replysubject}";
         }
 
+        $sql = "SELECT rp.reactionid,
+            rp.postid,
+            count(rp.postid) AS reaction_count
+            FROM {block_reactions_posts} rp
+            WHERE rp.postid = ?
+            GROUP BY rp.postid, rp.reactionid";
+        $params = [$post->get_id()];
+        $result = $DB->get_records_sql($sql, $params);
+        $reactionscount = array(0,0,0,0,0);
+        $reactionscount[0] = isset($result[0]) ? $result[0]->reaction_count : 0;
+        $reactionscount[1] = isset($result[1]) ? $result[1]->reaction_count : 0;
+        $reactionscount[2] = isset($result[2]) ? $result[2]->reaction_count : 0;
+        $reactionscount[3] = isset($result[3]) ? $result[3]->reaction_count : 0;
+        $reactionscount[4] = isset($result[4]) ? $result[4]->reaction_count : 0;
+
+
         return [
             'id' => $post->get_id(),
+            'postid' => $post->get_id(),
+            'userid' => $user->id,
+            'reactionid0count' => $reactionscount[0],
+            'reactionid1count' => $reactionscount[1],
+            'reactionid2count' => $reactionscount[2],
+            'reactionid3count' => $reactionscount[3],
+            'reactionid4count' => $reactionscount[4],
             'subject' => $subject,
             'replysubject' => $replysubject,
             'message' => $message,
