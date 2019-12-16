@@ -20,9 +20,13 @@ $conditions = [
     'userid' => $userid,
     'postid' => $postid
 ];
+
 $existingrecord = $DB->get_record('block_reactions_posts', $conditions);
 if (!$existingrecord) {
     $res = $DB->insert_record('block_reactions_posts', $record);
+} elseif ($existingrecord->reactionid == $reactionid) {
+    $existingrecord->reactionid = -1;
+    $res = $DB->update_record('block_reactions_posts', $existingrecord);
 } else {
     $existingrecord->reactionid = $reactionid;
     $res = $DB->update_record('block_reactions_posts', $existingrecord);

@@ -75,7 +75,7 @@ $coursemodule = $forum->get_course_module_record();
 $cm = \cm_info::create($coursemodule);
 
 require_course_login($course, true, $cm);
-
+$PAGE->requires->jquery();
 $PAGE->set_context($forum->get_context());
 $PAGE->set_title($forum->get_name());
 $PAGE->add_body_class('forumtype-' . $forum->get_type());
