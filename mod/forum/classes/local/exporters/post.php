@@ -35,6 +35,7 @@ use context;
 use core_tag_tag;
 use renderer_base;
 use stdClass;
+use context_course;
 
 require_once($CFG->dirroot . '/mod/forum/lib.php');
 
@@ -91,6 +92,9 @@ class post extends exporter {
 
         return [
             'id' => ['type' => PARAM_INT],
+            'postid' => ['type' => PARAM_INT],
+            'userid' => ['type' => PARAM_INT],
+            'userroleid' => ['type' => PARAM_INT],
             'subject' => ['type' => PARAM_TEXT],
             'replysubject' => ['type' => PARAM_TEXT],
             'message' => ['type' => PARAM_RAW],
@@ -339,6 +343,7 @@ class post extends exporter {
      * @return array Keys are the property names, values are their values.
      */
     protected function get_other_values(renderer_base $output) {
+        global $DB;
         $post = $this->post;
         $authorgroups = $this->related['authorgroups'];
         $forum = $this->related['forum'];
@@ -414,8 +419,16 @@ class post extends exporter {
             $replysubject = "{$strre} {$replysubject}";
         }
 
+        $context = context_course::instance($forum->get_course_id());
+        $roles = get_user_roles($context, $user->id, false);
+        $role = key($roles);
+        $roleid = $roles[$role]->roleid;
+
         return [
             'id' => $post->get_id(),
+            'postid' => $post->get_id(),
+            'userid' => $user->id,
+            'userroleid' => $roleid,
             'subject' => $subject,
             'replysubject' => $replysubject,
             'message' => $message,

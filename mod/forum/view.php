@@ -21,7 +21,7 @@
  * @copyright 2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+global $USER;
 require_once('../../config.php');
 
 $managerfactory = mod_forum\local\container::get_manager_factory();
@@ -75,7 +75,7 @@ $coursemodule = $forum->get_course_module_record();
 $cm = \cm_info::create($coursemodule);
 
 require_course_login($course, true, $cm);
-
+$PAGE->requires->jquery();
 $PAGE->set_context($forum->get_context());
 $PAGE->set_title($forum->get_name());
 $PAGE->add_body_class('forumtype-' . $forum->get_type());
