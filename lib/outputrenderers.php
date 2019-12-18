@@ -2252,7 +2252,8 @@ class core_renderer extends renderer_base {
                     $was_evaluated = 'evaluated';
                     break;
             }
-            $aggregatehtml  = html_writer::tag('span', $aggregatestr, array('id' => 'ratingaggregate'.$rating->itemid, 'class' => "ratingaggregate $was_evaluated")).' ';            if ($rating->count > 0) {
+            $aggregatehtml  = html_writer::tag('span', $aggregatestr, array('id' => 'ratingaggregate'.$rating->itemid, 'class' => "ratingaggregate $was_evaluated")).' ';
+            if ($rating->count > 0) {
                 $countstr = "({$rating->count})";
             } else {
                 $countstr = '-';
