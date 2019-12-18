@@ -4,10 +4,10 @@ define('AJAX_SCRIPT', true);
 require_once('../../config.php');
 
 global $DB;
-$reactionid = required_param('reactionid', PARAM_TEXT);
+$reactionid = required_param('reactionid', PARAM_INT);
 $postid = required_param('postid', PARAM_INT);
 $userid = required_param('userid', PARAM_INT);
-
+echo json_encode([$userid, $postid]);
 $record = new stdClass;
 $record->reactionid = $reactionid;
 $record->userid = $userid;

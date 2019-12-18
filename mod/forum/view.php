@@ -21,7 +21,7 @@
  * @copyright 2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+global $USER;
 require_once('../../config.php');
 
 $managerfactory = mod_forum\local\container::get_manager_factory();
