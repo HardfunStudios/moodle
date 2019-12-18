@@ -172,7 +172,6 @@ class mod_forum_external extends external_api {
      */
     public static function get_discussion_posts(int $discussionid, ?string $sortby, ?string $sortdirection) {
         global $USER;
-
         // Validate the parameter.
         $params = self::validate_parameters(self::get_discussion_posts_parameters(), [
                 'discussionid' => $discussionid,
@@ -214,7 +213,7 @@ class mod_forum_external extends external_api {
                 $discussion->get_id(),
                 $capabilitymanager->can_view_any_private_reply($USER),
                 "{$sortby} {$sortdirection}"
-        );
+            );
 
         $builderfactory = mod_forum\local\container::get_builder_factory();
         $postbuilder = $builderfactory->get_exported_posts_builder();

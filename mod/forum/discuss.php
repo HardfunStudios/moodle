@@ -33,9 +33,6 @@ $move   = optional_param('move', 0, PARAM_INT);          // If set, moves this d
 $mark   = optional_param('mark', '', PARAM_ALPHA);       // Used for tracking read posts if user initiated.
 $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking read posts if user initiated.
 $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
-$pageno = optional_param('page', 0, PARAM_INT);
-$pageno = optional_param('p', $pageno, PARAM_INT);
-$pagesize = optional_param('pagesize', 0, PARAM_INT);
 
 $url = new moodle_url('/mod/forum/discuss.php', array('d'=>$d));
 if ($parent !== 0) {
@@ -315,8 +312,7 @@ if ($move == -1 and confirm_sesskey()) {
     echo $OUTPUT->notification(get_string('discussionmoved', 'forum', $forumname), 'notifysuccess');
 }
 
-echo $discussionrenderer->render($USER, $post, $replies, $pageno, $pagesize);
-
+echo $discussionrenderer->render($USER, $post, $replies);
 echo $OUTPUT->footer();
 
 if ($istracked && !$CFG->forum_usermarksread) {

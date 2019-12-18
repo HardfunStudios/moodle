@@ -21,7 +21,7 @@
  * @copyright 2019 Andrew Nicols <andrew@nicols.co.uk>
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-
+global $USER;
 require_once('../../config.php');
 
 $managerfactory = mod_forum\local\container::get_manager_factory();
@@ -39,7 +39,7 @@ $showall = optional_param('showall', '', PARAM_INT);
 $pageno = optional_param('page', 0, PARAM_INT);
 $search = optional_param('search', '', PARAM_CLEAN);
 $pageno = optional_param('p', $pageno, PARAM_INT);
-$pagesize = optional_param('s', $discussionvault::PAGESIZE_DEFAULT, PARAM_INT);
+$pagesize = optional_param('s', 0, PARAM_INT);
 $sortorder = optional_param('o', null, PARAM_INT);
 
 if (!$cmid && !$forumid) {
@@ -75,7 +75,7 @@ $coursemodule = $forum->get_course_module_record();
 $cm = \cm_info::create($coursemodule);
 
 require_course_login($course, true, $cm);
-
+$PAGE->requires->jquery();
 $PAGE->set_context($forum->get_context());
 $PAGE->set_title($forum->get_name());
 $PAGE->add_body_class('forumtype-' . $forum->get_type());
@@ -146,12 +146,6 @@ $groupid = groups_get_activity_group($cm, true) ?: null;
 $rendererfactory = mod_forum\local\container::get_renderer_factory();
 switch ($forum->get_type()) {
     case 'single':
-        if (null === $pagesize || $pagesize <= 0) {
-            $pagesize = $discussionvault::PAGESIZE_DEFAULT;
-        }
-        if (null === $pageno || $pageno < 0) {
-            $pageno = 0;
-        }
         $discussion = $discussionvault->get_last_discussion_in_forum($forum);
         $discussioncount = $discussionvault->get_count_discussions_in_forum($forum);
         $hasmultiplediscussions = $discussioncount > 1;
@@ -163,17 +157,9 @@ switch ($forum->get_type()) {
                 $USER,
                 $post,
                 $capabilitymanager->can_view_any_private_reply($USER),
-                $orderpostsby,
-                $pageno,
-                $pagesize
+                $orderpostsby
             );
-
         echo $discussionsrenderer->render($USER, $post, $replies);
-
-        $totalrepliescount = $postvault->get_reply_count_for_post_id_in_discussion_id($USER, $post->get_id(), $discussion->get_id(), true);
-        if ( $totalrepliescount > $discussionvault::PAGESIZE_DEFAULT ) {
-            echo $OUTPUT->paging_bar($totalrepliescount, $pageno, $pagesize, $url);
-        }
 
         if (!$CFG->forum_usermarksread && forum_tp_is_tracked($forumrecord, $USER)) {
             $postids = array_map(function($post) {
