@@ -422,7 +422,13 @@ class post extends exporter {
         $context = context_course::instance($forum->get_course_id());
         $roles = get_user_roles($context, $user->id, false);
         $role = key($roles);
-        $roleid = $roles[$role]->roleid;
+
+        if (!empty($role)) {
+            $roleid = $roles[$role]->roleid;
+        }
+        else {
+            $roleid = 0;
+        }
 
         return [
             'id' => $post->get_id(),
