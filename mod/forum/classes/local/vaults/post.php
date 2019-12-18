@@ -29,6 +29,7 @@ defined('MOODLE_INTERNAL') || die();
 use mod_forum\local\entities\post as post_entity;
 use mod_forum\local\factories\entity as entity_factory;
 use stdClass;
+use mod_forum\local\vaults\discussion as discussion_vault;
 
 /**
  * Post vault class.
@@ -69,7 +70,8 @@ class post extends db_table_vault {
      * @param int|null $userid The user ID
      * @return string
      */
-    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null) : string {
+    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null, string $limitsql = null,
+    string $offsetsql = null) : string {
         $table = self::TABLE;
         $alias = $this->get_table_alias();
         $fields = $alias . '.*';
@@ -78,6 +80,11 @@ class post extends db_table_vault {
         $selectsql = "SELECT {$fields} FROM {$tables}";
         $selectsql .= $wheresql ? ' WHERE ' . $wheresql : '';
         $selectsql .= $sortsql ? ' ORDER BY ' . $sortsql : '';
+
+        if (!is_null($limitsql) && !is_null($offsetsql)) {
+            $selectsql .= $limitsql ? ' LIMIT ' . $limitsql : '';
+            $selectsql .= $offsetsql ? ' OFFSET ' . $offsetsql : '';
+        }
 
         return $selectsql;
     }
@@ -175,7 +182,9 @@ class post extends db_table_vault {
         stdClass $user,
         post_entity $post,
         bool $canseeprivatereplies,
-        string $orderby = 'created ASC'
+        string $orderby = 'created ASC',
+        int $pageno = 0,
+        int $pagesize = discussion_vault::DEFAULT_PAGESIZE
     ) : array {
         $alias = $this->get_table_alias();
 
@@ -197,7 +206,9 @@ class post extends db_table_vault {
                  AND {$alias}.created >= :created {$privatewhere}
                  AND {$alias}.id != :excludepostid";
         $orderbysql = $alias . '.' . $orderby;
-        $sql = $this->generate_get_records_sql($wheresql, $orderbysql);
+        $limitsql = $pagesize . '';
+        $offsetsql = $pageno*$pagesize . '';
+        $sql = $this->generate_get_records_sql($wheresql, $orderbysql, null, $limitsql, $offsetsql);
         $records = $this->get_db()->get_records_sql($sql, $params);
         $posts = $this->transform_db_records_to_entities($records);
         $sorter = $this->get_entity_factory()->get_posts_sorter();

@@ -64,7 +64,8 @@ class forum extends db_table_vault {
      * @param int|null $userid The user ID
      * @return string
      */
-    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null) : string {
+    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null, string $limitsql = null,
+    string $offsetsql = null) : string {
         $db = $this->get_db();
         $alias = $this->get_table_alias();
 
@@ -91,7 +92,6 @@ class forum extends db_table_vault {
 
         return $selectsql;
     }
-
     /**
      * Get a list of preprocessors to execute on the DB results before being converted
      * into entities.

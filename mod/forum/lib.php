@@ -83,6 +83,7 @@ define('FORUM_DISCUSSION_UNPINNED', 0);
  * @param mod_forum_mod_form $mform
  * @return int intance id
  */
+
 function forum_add_instance($forum, $mform = null) {
     global $CFG, $DB;
 
@@ -1045,6 +1046,13 @@ function forum_get_post_full($postid) {
                             WHERE p.id = ?", array($postid));
 }
 
+function forum_count_all_discussion_posts($discussionid) {
+    global $CFG, $DB, $USER;
+    $params = array($discussionid);
+    $result = $DB->get_records_sql("SELECT COUNT(*) FROM {forum_posts} p WHERE p.discussion = ?", $params);
+    return array_pop($result)->count;
+}
+
 /**
  * Gets all posts in discussion including top parent.
  *
@@ -1053,7 +1061,7 @@ function forum_get_post_full($postid) {
  * @param   bool    $tracking       Whether the user tracks this forum.
  * @return  array                   The posts in the discussion.
  */
-function forum_get_all_discussion_posts($discussionid, $sort, $tracking = false) {
+function forum_get_all_discussion_posts($discussionid, $sort, $tracking = false, $limit = false) {
     global $CFG, $DB, $USER;
 
     $tr_sel  = "";
@@ -1068,13 +1076,28 @@ function forum_get_all_discussion_posts($discussionid, $sort, $tracking = false)
 
     $allnames = get_all_user_name_fields(true, 'u');
     $params[] = $discussionid;
+
+    if ($limit) {
+        $limit = "LIMIT ${limit['limit']} OFFSET ${limit['offset']}";
+    }
+
     if (!$posts = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
                                      FROM {forum_posts} p
                                           LEFT JOIN {user} u ON p.userid = u.id
                                           $tr_join
                                     WHERE p.discussion = ?
-                                 ORDER BY $sort", $params)) {
+                                 ORDER BY $sort $limit", $params)) {
         return array();
+    }
+
+    if ($limit) {
+        $root = $DB->get_records_sql("SELECT p.*, $allnames, u.email, u.picture, u.imagealt $tr_sel
+        FROM {forum_posts} p
+          LEFT JOIN {user} u ON p.userid = u.id
+          $tr_join
+        WHERE p.discussion = ? AND parent = 0", $params);
+        $root = array_pop($root);
+        $posts[$root->id] = $root;
     }
 
     foreach ($posts as $pid=>$p) {
@@ -2429,6 +2452,8 @@ function mod_forum_rating_can_see_item_ratings($params) {
  * @param boolean $canviewparticipants True if user has the viewparticipants permission for this course
  * @param boolean $canviewhiddentimedposts True if user has the viewhiddentimedposts permission for this forum
  */
+
+
 function forum_print_discussion_header(&$post, $forum, $group = -1, $datestring = "",
                                         $cantrack = true, $forumtracked = true, $canviewparticipants = true, $modcontext = null,
                                         $canviewhiddentimedposts = false) {
