@@ -43,6 +43,7 @@ use mod_forum\local\entities\discussion as discussion_entity;
 class discussion extends db_table_vault {
     /** The table for this vault */
     private const TABLE = 'forum_discussions';
+    public const PAGESIZE_DEFAULT = 50;
 
     /**
      * Get the table alias.
@@ -61,7 +62,8 @@ class discussion extends db_table_vault {
      * @param int|null $userid The user ID
      * @return string
      */
-    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null) : string {
+    protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null, ?int $userid = null, string $limitsql = null,
+    string $offsetsql = null) : string {
         $selectsql = 'SELECT * FROM {' . self::TABLE . '} ' . $this->get_table_alias();
         $selectsql .= $wheresql ? ' WHERE ' . $wheresql : '';
         $selectsql .= $sortsql ? ' ORDER BY ' . $sortsql : '';

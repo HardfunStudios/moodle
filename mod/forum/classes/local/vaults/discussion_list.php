@@ -99,7 +99,9 @@ class discussion_list extends db_table_vault {
      *
      * @return string
      */
-    protected function generate_get_records_sql(string $wheresql = null, ?string $sortsql = null, ?int $userid = null) : string {
+    protected function generate_get_records_sql(string $wheresql = null, ?string $sortsql = null, ?int $userid = null,
+        string $limitsql = null,
+        string $offsetsql = null) : string {
         $alias = $this->get_table_alias();
         $db = $this->get_db();
 

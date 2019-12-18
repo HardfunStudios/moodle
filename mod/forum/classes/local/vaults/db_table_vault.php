@@ -76,7 +76,9 @@ abstract class db_table_vault {
      * @return string
      */
     abstract protected function generate_get_records_sql(string $wheresql = null, string $sortsql = null,
-        ?int $userid = null) : string;
+        ?int $userid = null,
+        string $limitsql = null,
+        string $offsetsql = null) : string;
 
     /**
      * Convert the DB records into entities. The list of records will have been
