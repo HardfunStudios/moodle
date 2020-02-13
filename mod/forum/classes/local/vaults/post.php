@@ -184,7 +184,7 @@ class post extends db_table_vault {
         bool $canseeprivatereplies,
         string $orderby = 'created ASC',
         int $pageno = 0,
-        int $pagesize = discussion_vault::DEFAULT_PAGESIZE
+        int $pagesize = discussion_vault::PAGESIZE_DEFAULT
     ) : array {
         $alias = $this->get_table_alias();
 
