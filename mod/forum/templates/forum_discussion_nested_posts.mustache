@@ -29,54 +29,6 @@
     {
     }
 }}
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/lozad/dist/lozad.min.js"></script>
-
-<script type="text/javascript">
-    const observer = lozad(); // lazy loads elements with default selector as '.lozad'
-    observer.observe();
-</script>
-
-<script type="text/javascript">
-    function sendReaction(reactionid, userid, postid) {
-        $.ajax({
-            url:'/blocks/',
-            type:'post',
-            data:$('#reactionsForm'+reactionid+'-'+userid+'-'+postid).serialize(),
-            success:function(){
-                alert("worked");
-            },
-            fail:function(){
-                alert("failed");
-            }
-        });
-    }
-</script>
-
-<script type="text/javascript">
-    function getReactions(postid) {
-        console.log("Executei getreactions");
-        $.ajax({
-            url:'/blocks/reactions/get_reactions_ajax.php',
-            type:'post',
-            data:{ 'postid': postid },
-            success:function(response){
-                for (var i=0; i<4; i++) {
-                        el = document.getElementById("labelsendreaction" + i + "-" + postid);
-                    if (response[i]) {
-                        el.innerHTML = response[i].reactions_count;
-                    }
-                    else {
-                        el.innerHTML = 0;
-                    }
-                }
-            },
-            fail:function(){
-                console.error("failed");
-            }
-        });
-    }
-</script>
-
 {{#posts}}
     {{> mod_forum/forum_discussion_nested_post }}
 {{/posts}}
