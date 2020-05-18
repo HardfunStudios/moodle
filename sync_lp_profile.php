@@ -139,7 +139,7 @@ class MoodleUserInfoSync {
             'education_level'		        => 27,
             'family_income'			        => 28,
             'phone_number'			        => 29,
-            'is_special'			        => 30,
+            'is_special'			        => 35,
             'special_degree_list'			=> 31,
             'has_tools_for_experience'		=> 32,
             'which_tools_for_experience'	=> 33,
