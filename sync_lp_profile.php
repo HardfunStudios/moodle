@@ -138,7 +138,12 @@ class MoodleUserInfoSync {
             'gender'				        => 26,
             'education_level'		        => 27,
             'family_income'			        => 28,
-            'phone_number'			        => 29
+            'phone_number'			        => 29,
+            'is_special'			        => 36,
+            'special_degree_list'			=> 37,
+            'has_tools_for_experience'		=> 38,
+            'which_tools_for_experience'	=> 39,
+            'authorize_testimony'			=> 40
         );
 
         foreach($extra_fields_ids as $key => $id) {
