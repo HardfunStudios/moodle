@@ -78,8 +78,9 @@ class MoodleUserInfoSync {
     }
 
     private function updateBasicInformation() {
-        error_log(print_r($this->student, TRUE));
+        error_log(print_r('------------------------------------------', TRUE));
         error_log(print_r($this->student['country'], TRUE));
+        error_log(print_r('------------------------------------------', TRUE));
         $sth = $this->moodle->prepare('UPDATE '.$this->moodle_prefix.'user SET firstname=?, lastname=?, email=?, phone2=?, city=?, country=? WHERE id=?');
         $student_lp_basic_fields = array(
             $this->student['first_name'],
