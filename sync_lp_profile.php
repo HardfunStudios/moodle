@@ -90,7 +90,7 @@ class MoodleUserInfoSync {
             $this->student['email'],
             $this->student['phone_number'],
             $this->student['city_name'] || "", // Moodle refuses null city
-            $this->student['country'] || "BR",
+            strval($this->student['country']) || "BR",
             $this->moodle_user_id
         );
         if(!$sth->execute($student_lp_basic_fields)){
