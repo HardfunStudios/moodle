@@ -144,11 +144,11 @@ class MoodleUserInfoSync {
             'education_level'		        => 27,
             'family_income'			        => 28,
             'phone_number'			        => 29,
-            'is_special'                    => 36,
-            'special_degree_list'           => 37,
-            'has_tools_for_experience'      => 38,
-            'which_tools_for_experience'    => 39,
-            'authorize_testimony'           => 40
+            'is_special'                    => 30,
+            'special_degree_list'           => 31,
+            'has_tools_for_experience'      => 32,
+            'which_tools_for_experience'    => 33,
+            'authorize_testimony'           => 34
         );
 
         foreach($extra_fields_ids as $key => $id) {
