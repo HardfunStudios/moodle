@@ -64,4 +64,5 @@ user/profile/field/multiselect
 
 # Custom themes
 theme/ec
+config-db-hf.php
 
