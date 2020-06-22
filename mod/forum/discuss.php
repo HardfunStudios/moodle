@@ -35,7 +35,7 @@ $postid = optional_param('postid', 0, PARAM_INT);        // Used for tracking re
 $pin    = optional_param('pin', -1, PARAM_INT);          // If set, pin or unpin this discussion.
 $pageno = optional_param('page', 0, PARAM_INT);
 $pageno = optional_param('p', $pageno, PARAM_INT);
-$pagesize = optional_param('pagesize', 0, PARAM_INT);
+
 
 $url = new moodle_url('/mod/forum/discuss.php', array('d'=>$d));
 if ($parent !== 0) {
@@ -46,6 +46,7 @@ $PAGE->set_url($url);
 $vaultfactory = mod_forum\local\container::get_vault_factory();
 $discussionvault = $vaultfactory->get_discussion_vault();
 $discussion = $discussionvault->get_from_id($d);
+$pagesize = optional_param('s', $discussionvault::PAGESIZE_DEFAULT, PARAM_INT);
 
 if (!$discussion) {
     throw new \moodle_exception('Unable to find discussion with id ' . $discussionid);
@@ -305,7 +306,14 @@ echo $OUTPUT->heading(format_string($discussion->get_name()), 3, 'discussionname
 $rendererfactory = mod_forum\local\container::get_renderer_factory();
 $discussionrenderer = $rendererfactory->get_discussion_renderer($forum, $discussion, $displaymode);
 $orderpostsby = $displaymode == FORUM_MODE_FLATNEWEST ? 'created DESC' : 'created ASC';
-$replies = $postvault->get_replies_to_post($USER, $post, $capabilitymanager->can_view_any_private_reply($USER), $orderpostsby);
+$replies = $postvault->get_replies_to_post(
+    $USER,
+    $post,
+    $capabilitymanager->can_view_any_private_reply($USER),
+    $orderpostsby,
+    $pageno,
+    $pagesize
+);
 $postids = array_map(function($post) {
     return $post->get_id();
 }, array_merge([$post], array_values($replies)));
@@ -316,6 +324,11 @@ if ($move == -1 and confirm_sesskey()) {
 }
 
 echo $discussionrenderer->render($USER, $post, $replies, $pageno, $pagesize);
+
+$totalrepliescount = $postvault->get_reply_count_for_post_id_in_discussion_id($USER, $post->get_id(), $discussion->get_id(), true);
+if ( $totalrepliescount > $discussionvault::PAGESIZE_DEFAULT ) {
+    echo $OUTPUT->paging_bar($totalrepliescount, $pageno, $pagesize, $url);
+}
 
 echo $OUTPUT->footer();
 
