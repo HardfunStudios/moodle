@@ -260,6 +260,11 @@ if ($parent) {
     $parent = $discussion->get_first_post_id();
 }
 
+if ($displaymode == FORUM_MODE_NESTED) {
+    $pagesize = 99999;
+    $pageno = 0;
+}
+
 $postvault = $vaultfactory->get_post_vault();
 if (!$post = $postvault->get_from_id($parent)) {
     print_error("notexists", 'forum', "$CFG->wwwroot/mod/forum/view.php?f={$forum->get_id()}");
@@ -326,7 +331,7 @@ if ($move == -1 and confirm_sesskey()) {
 echo $discussionrenderer->render($USER, $post, $replies, $pageno, $pagesize);
 
 $totalrepliescount = $postvault->get_reply_count_for_post_id_in_discussion_id($USER, $post->get_id(), $discussion->get_id(), true);
-if ( $totalrepliescount > $discussionvault::PAGESIZE_DEFAULT ) {
+if ( $totalrepliescount > $discussionvault::PAGESIZE_DEFAULT && $displaymode != FORUM_MODE_NESTED) {
     echo $OUTPUT->paging_bar($totalrepliescount, $pageno, $pagesize, $url);
 }
 
