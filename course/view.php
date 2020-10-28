@@ -42,7 +42,11 @@
         }
     }
 
-
+    if (array_key_exists('is_my_first_time', $_REQUEST)) {
+        if ($_REQUEST['is_my_first_time'] == "true") {
+          $_SESSION['is_my_first_time'] = true;
+        }
+    }
 
 
     $urlparams = array('id' => $course->id);
@@ -114,7 +118,7 @@
         $reset_user_allowed_editing = true;
     }
 
-    
+
 
 
     //If course is hosted on an external server, redirect to corresponding
