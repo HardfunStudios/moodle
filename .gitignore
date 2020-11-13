@@ -61,8 +61,12 @@ user/profile/field/cpf
 auth/loginlogoutredir
 mod/simplecertificate
 user/profile/field/multiselect
+blocks/hf_level
+blocks/hf_badges
+blocks/hf_sharelink
+blocks/hf_notifications
+blocks/reactions
 
 # Custom themes
 theme/ec
 config-db-hf.php
-
